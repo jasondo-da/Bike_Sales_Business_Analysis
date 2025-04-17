@@ -62,15 +62,50 @@ ORDER BY total_sales DESC
 
 -- Product Performance --
 
-/* 	Which category are the best sellers? */
+/* 	Which brands generate the most sales? */
+SELECT 
+    b.brand_name,
+    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales
+FROM order_items ot
+LEFT JOIN products p
+	ON ot.product_id = p.product_id
+LEFT JOIN brands b
+	ON p.brand_id = b.brand_id
+GROUP BY b.brand_name
+ORDER BY total_sales DESC
+LIMIT 5
 
-/* 	Which sellers generate the most sales? */
+/* 	Which category are the best sellers? */
+SELECT 
+	c.category_name,
+    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales
+FROM order_items ot
+LEFT JOIN products p
+	ON ot.product_id = p.product_id
+LEFT JOIN categories c
+	ON p.category_id = c.category_id
+GROUP BY c.category_name
+ORDER BY total_sales DESC
 
 /* 	Which items are the best sellers? */
-
-/* 	Which products are the most profitable? */
+SELECT
+	p.product_name,
+    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales
+FROM order_items ot
+LEFT JOIN products p
+	ON ot.product_id = p.product_id
+LEFT JOIN brands b
+	ON p.brand_id = b.brand_id
+GROUP BY p.product_name
+ORDER BY total_sales DESC
+LIMIT 10
 
 /* 	Do discounts affect total sales? */
+SELECT 
+	ROUND(SUM(ot.quantity * ot.list_price), 2) total_sales,
+    ROUND(SUM(ot.discount), 2) total_discounts,
+	1 - ((SUM(ot.quantity * ot.list_price) - SUM(ot.discount))) / (SUM(ot.quantity * ot.list_price)) percentage_of_sales
+FROM order_items ot
 
 -- Seasonal Performance --
 
