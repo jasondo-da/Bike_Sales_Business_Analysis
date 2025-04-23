@@ -2,71 +2,7 @@
 -- Query SQL --
 ---------------
 
--- Geographic Performance --
-
-/* What are the total historical sales by state? */
-SELECT 
-	c.state,
-    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_state_sales
-FROM customers c
-LEFT JOIN orders o
-	ON c.customer_id = o.customer_id
-LEFT JOIN order_items ot
-	ON o.order_id = ot.order_id
-GROUP BY c.state
-
-/* 	Which areas contain the largest addressable market? */
-SELECT 
-	c.state,
-	COUNT(DISTINCT c.customer_id) total_customers,
-    ROUND(((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)) / COUNT(c.customer_id)), 2) avg_sale_per_customer
-FROM customers c
-LEFT JOIN orders o
-	ON c.customer_id = o.customer_id
-LEFT JOIN order_items ot
-	ON o.order_id = ot.order_id
-GROUP BY c.state
-ORDER BY total_customers DESC
-
-/* 	Which cities generate the most revenue? */
-SELECT 
-	c.city,
-    c.state,
-	COUNT(DISTINCT c.customer_id) total_customers,
-    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales,
-    ROUND(((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)) / COUNT(c.customer_id)), 2) avg_sale_per_customer
-FROM customers c
-LEFT JOIN orders o
-	ON c.customer_id = o.customer_id
-LEFT JOIN order_items ot
-	ON o.order_id = ot.order_id
-GROUP BY c.city, c.state
-ORDER BY total_sales DESC
-LIMIT 10
-
-/* 	Which stores are historical sales leaders and losers? */
-SELECT 
-	s.store_id,
-    s.store_name,
-    s.state,
-	COUNT(DISTINCT o.customer_id) total_customers,
-    ROUND(SUM(ot.quantity * ot.list_price), 2) total_sales,
-    ROUND((SUM(ot.quantity * ot.list_price) / COUNT(o.customer_id)), 2) store_avg_sale_per_customer
-FROM stores s
-LEFT JOIN orders o
-	ON s.store_id = o.store_id
-LEFT JOIN order_items ot
-	ON o.order_id = ot.order_id
-GROUP BY s.store_id, s.store_name, s.state
-ORDER BY total_sales DESC
-
-
-
-
-
--- Product Performance --
-
-/* 	Which brands generate the most sales? */
+/* Which brands generate the most sales? */
 SELECT 
     b.brand_name,
     ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales
@@ -79,7 +15,7 @@ GROUP BY b.brand_name
 ORDER BY total_sales DESC
 LIMIT 5
 
-/* 	Which category are the best sellers? */
+/* Which category are the best sellers? */
 SELECT 
 	c.category_name,
     ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales
@@ -91,7 +27,7 @@ LEFT JOIN categories c
 GROUP BY c.category_name
 ORDER BY total_sales DESC
 
-/* 	Which items are the best sellers? */
+/* Which items are the best sellers? */
 SELECT
 	p.product_id,
 	p.product_name,
@@ -105,7 +41,7 @@ GROUP BY p.product_id, p.product_name
 ORDER BY total_sales DESC
 LIMIT 10
 
-/* 	Do discounts affect total sales? */
+/* Do discounts affect total sales? */
 SELECT 
 	ROUND(SUM(ot.quantity * ot.list_price), 2) total_sales,
     ROUND(SUM(ot.discount), 2) total_discounts,
@@ -113,13 +49,7 @@ SELECT
 FROM order_items ot
 
 
-
-
-
-
--- Seasonal Performance --
-
-/* 	Which months historically move the most volume?  Most Sales? */
+/* Which months historically move the most volume?  Most Sales? */
 SELECT 
 	MONTH(o.order_date),
     COUNT(o.order_id) total_orders,
@@ -130,7 +60,7 @@ LEFT JOIN order_items ot
 	ON o.order_id = ot.order_id
 GROUP BY MONTH(o.order_date)
 
-/* 	Does the shipping time affect sales? */
+/* Does the shipping time affect sales? */
 WITH late_orders AS (
 	SELECT 
 		COUNT(o.order_id) total_late_orders,
@@ -165,3 +95,59 @@ LEFT JOIN stores s
 	ON o.store_id = s.store_id
 WHERE o.order_status = 3
 GROUP BY s.store_id
+
+/* What are the total historical sales by state? */
+SELECT 
+	c.state,
+    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_state_sales
+FROM customers c
+LEFT JOIN orders o
+	ON c.customer_id = o.customer_id
+LEFT JOIN order_items ot
+	ON o.order_id = ot.order_id
+GROUP BY c.state
+
+/* Which areas contain the largest addressable market? */
+SELECT 
+	c.state,
+	COUNT(DISTINCT c.customer_id) total_customers,
+    ROUND(((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)) / COUNT(c.customer_id)), 2) avg_sale_per_customer
+FROM customers c
+LEFT JOIN orders o
+	ON c.customer_id = o.customer_id
+LEFT JOIN order_items ot
+	ON o.order_id = ot.order_id
+GROUP BY c.state
+ORDER BY total_customers DESC
+
+/* Which cities generate the most revenue? */
+SELECT 
+	c.city,
+    c.state,
+	COUNT(DISTINCT c.customer_id) total_customers,
+    ROUND((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)), 2) total_sales,
+    ROUND(((SUM(ot.quantity * ot.list_price) - SUM(ot.discount)) / COUNT(c.customer_id)), 2) avg_sale_per_customer
+FROM customers c
+LEFT JOIN orders o
+	ON c.customer_id = o.customer_id
+LEFT JOIN order_items ot
+	ON o.order_id = ot.order_id
+GROUP BY c.city, c.state
+ORDER BY total_sales DESC
+LIMIT 10
+
+/* Which stores are historical sales leaders and losers? */
+SELECT 
+	s.store_id,
+    s.store_name,
+    s.state,
+	COUNT(DISTINCT o.customer_id) total_customers,
+    ROUND(SUM(ot.quantity * ot.list_price), 2) total_sales,
+    ROUND((SUM(ot.quantity * ot.list_price) / COUNT(o.customer_id)), 2) store_avg_sale_per_customer
+FROM stores s
+LEFT JOIN orders o
+	ON s.store_id = o.store_id
+LEFT JOIN order_items ot
+	ON o.order_id = ot.order_id
+GROUP BY s.store_id, s.store_name, s.state
+ORDER BY total_sales DESC
